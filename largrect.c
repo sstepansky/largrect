@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 typedef struct {
-    unsigned int area;
+    unsigned long int area;
     unsigned int x0;
     unsigned int y0;
     unsigned int x1;
@@ -47,7 +47,8 @@ largrect(PyObject *self, PyObject *args)
     if (status = (w == NULL || h == NULL))
         goto cleanup;
 
-    unsigned int minw, area;
+    unsigned int minw;
+    unsigned long int area;
     Rect area_max = {0};
 
     npy_uint8 *p;
@@ -72,7 +73,10 @@ largrect(PyObject *self, PyObject *args)
             for (dh = 0; dh < h[r * ncols + c]; dh++)
             {
                 minw = ((minw) < (w[(r - dh) * ncols + c])) ? (minw) : (w[(r - dh) * ncols + c]);
-                area = (dh + 1) * minw;
+                area = ((unsigned long int)dh + 1UL) * (unsigned long int)minw;
+                if (minw != area / (dh + 1))
+                    return failure(PyExc_OverflowError,
+                                   "An integer wraparound occurred. Rectangle area too large to compute.");
                 if (area > area_max.area)
                 {
                     area_max.area = area;
