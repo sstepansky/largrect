@@ -61,11 +61,11 @@ largrect(PyObject *self, PyObject *args)
             if (*p++)  // non-zero
                 continue;
             if (!r)
-                h[r * ncols + c] = 1;
+                h[c] = 1;
             else
                 h[r * ncols + c] = h[(r - 1) * ncols + c] + 1;
             if (!c)
-                w[r * ncols + c] = 1;
+                w[r * ncols] = 1;
             else
                 w[r * ncols + c] = w[r * ncols + c - 1] + 1;
 
