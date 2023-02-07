@@ -42,10 +42,14 @@ largrect(PyObject *self, PyObject *args)
     unsigned int *w = calloc((nrows * ncols), sizeof(int));
     unsigned int *h = calloc((nrows * ncols), sizeof(int));
 
-    bool status;
+    bool error;
 
-    if (status = (w == NULL || h == NULL))
+    if (error = (w == NULL || h == NULL))
+    {
+        PyErr_SetString(PyExc_MemoryError,
+                        "Could not allocate memory for arrays");
         goto cleanup;
+    }
 
     unsigned int minw;
     unsigned long int area;
@@ -74,9 +78,12 @@ largrect(PyObject *self, PyObject *args)
             {
                 minw = ((minw) < (w[(r - dh) * ncols + c])) ? (minw) : (w[(r - dh) * ncols + c]);
                 area = ((unsigned long int)dh + 1UL) * (unsigned long int)minw;
-                if (minw != area / (dh + 1))
-                    return failure(PyExc_OverflowError,
-                                   "An integer wraparound occurred. Rectangle area too large to compute.");
+                if (error = (minw != area / (dh + 1)))
+                {
+                    PyErr_SetString(PyExc_OverflowError,
+                                    "An integer wraparound occurred. Rectangle area too large to compute.");
+                    goto cleanup;
+                }
                 if (area > area_max.area)
                 {
                     area_max.area = area;
@@ -93,12 +100,9 @@ cleanup:
     free(h);
     free(w);
 
-    if (status)
-    {
-        PyErr_SetString(PyExc_MemoryError,
-                    "Could not allocate memory for arrays");
+
+    if (error)
         return NULL;
-    }
 
     PyObject *out = Py_BuildValue("iiii", area_max.x0, area_max.y0, area_max.x1, area_max.y1);
 
