@@ -24,6 +24,7 @@ failure(PyObject *type, const char *message)
 static PyObject*
 largrect(PyObject *self, PyObject *args)
 {
+    PyObject *out = NULL;
     PyArrayObject *a;
 
     if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &a))
@@ -101,10 +102,8 @@ cleanup:
     free(w);
 
 
-    if (error)
-        return NULL;
-
-    PyObject *out = Py_BuildValue("iiii", area_max.x0, area_max.y0, area_max.x1, area_max.y1);
+    if (!error)
+        out = Py_BuildValue("iiii", area_max.x0, area_max.y0, area_max.x1, area_max.y1);
 
     return out;
 }
